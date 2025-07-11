@@ -1,11 +1,17 @@
 // Load environment variables from .env file
 require('dotenv').config();
 
+// Force production mode on Render
+if (process.env.RENDER) {
+  process.env.NODE_ENV = 'production';
+}
+
 // Log environment variables for debugging
 console.log('Environment variables:', {
   NODE_ENV: process.env.NODE_ENV || 'development',
   MONGO_URI: process.env.MONGO_URI ? '✅ MONGO_URI is set' : '❌ MONGO_URI is not set!',
-  JWT_SECRET: process.env.JWT_SECRET ? '✅ JWT_SECRET is set' : '❌ JWT_SECRET is not set!'
+  JWT_SECRET: process.env.JWT_SECRET ? '✅ JWT_SECRET is set' : '❌ JWT_SECRET is not set!',
+  RENDER: process.env.RENDER || 'Not running on Render'
 });
 
 const express = require('express');
@@ -79,15 +85,28 @@ app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
 // Serve static files from the React app in production
 if (process.env.NODE_ENV === 'production') {
+  // Path to the React app build directory
   const clientBuildPath = path.join(__dirname, '..', 'client', 'build');
   
-  // Set static folder
-  app.use(express.static(clientBuildPath));
+  // Log the build path for debugging
+  console.log('Serving static files from:', clientBuildPath);
   
-  // Handle React routing, return all requests to React app
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(clientBuildPath, 'index.html'));
-  });
+  // Check if build directory exists
+  if (fs.existsSync(clientBuildPath)) {
+    console.log('Found React build directory');
+    // Serve static files from the build directory
+    app.use(express.static(clientBuildPath));
+    
+    // Handle React routing, return all requests to React app
+    app.get('*', (req, res) => {
+      console.log('Serving React app for path:', req.path);
+      res.sendFile(path.join(clientBuildPath, 'index.html'));
+    });
+  } else {
+    console.error('React build directory not found at:', clientBuildPath);
+    console.log('Current working directory:', process.cwd());
+    console.log('Directory contents:', fs.readdirSync(path.join(__dirname, '..')));
+  }
 }
 
 // Development-only .env check
