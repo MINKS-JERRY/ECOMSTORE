@@ -1,12 +1,10 @@
 import axios from 'axios';
 
-// In development, we use the proxy defined in package.json ('/api')
-// In production, we use the full URL from environment variable
-const isDevelopment = process.env.NODE_ENV === 'development';
-const API_BASE_URL = isDevelopment ? '/api' : process.env.REACT_APP_API_URL || '';
+// Always use relative paths for API requests
+// This avoids CORS issues in production
+const API_BASE_URL = '/api';
 
-console.log(`Running in ${isDevelopment ? 'development' : 'production'} mode`);
-console.log('Using API base URL:', API_BASE_URL || '/api (proxy)');
+console.log('API base URL:', API_BASE_URL);
 
 // Create axios instance with enhanced configuration
 const api = axios.create({

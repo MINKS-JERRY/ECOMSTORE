@@ -80,6 +80,14 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
+// API Routes must come before static files
+const authRoutes = require('./routes/auth');
+const productRoutes = require('./routes/products');
+
+// Mount API routes
+app.use('/api/auth', authRoutes);
+app.use('/api/products', productRoutes);
+
 // Serve uploaded images statically
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
