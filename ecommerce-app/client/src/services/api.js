@@ -42,9 +42,7 @@ const api = axios.create({
     'Accept': 'application/json',
     'Cache-Control': 'no-cache, no-store, must-revalidate',
     'Pragma': 'no-cache',
-    'Expires': '0',
-    'Access-Control-Allow-Origin': window.location.origin,
-    'Access-Control-Allow-Credentials': 'true'
+    'Expires': '0'
   }
 });
 

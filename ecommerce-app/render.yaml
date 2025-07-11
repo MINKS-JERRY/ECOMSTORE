@@ -19,4 +19,6 @@ services:
         generateValue: true
       - key: PORT
         value: 10000
+      - key: REACT_APP_API_URL
+        value: https://ecomstore-7j0x.onrender.com/api
     plan: free

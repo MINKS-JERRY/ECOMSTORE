@@ -20,28 +20,46 @@ const app = express();
 const allowedOrigins = [
   'https://ecommerce-app-ws9s.onrender.com', // frontend
   'https://ecomstore-7j0x.onrender.com',     // backend
+  'http://localhost:3000',                   // local development frontend
+  'http://localhost:3001',                   // alternative local frontend port
 ];
 
 const corsOptions = {
   origin: (origin, callback) => {
-    if (!origin) return callback(null, true); // allow non-browser clients
-
-    if (
-      process.env.NODE_ENV !== 'production' ||
-      allowedOrigins.includes(origin) ||
-      origin.endsWith('.onrender.com')
-    ) {
-      callback(null, true);
-    } else {
-      callback(new Error('❌ Not allowed by CORS: ' + origin));
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Allow localhost in development
+    if (process.env.NODE_ENV !== 'production') {
+      return callback(null, true);
     }
+    
+    // Check if origin is in allowed list
+    if (allowedOrigins.includes(origin) || origin.endsWith('.onrender.com')) {
+      return callback(null, true);
+    }
+    
+    console.log('❌ CORS blocked origin:', origin);
+    return callback(new Error('❌ Not allowed by CORS: ' + origin));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization'],
+  optionsSuccessStatus: 200 // Some legacy browsers (IE11, various SmartTVs) choke on 204
 };
 
+// Apply CORS before other middleware
 app.use(cors(corsOptions));
+
+// Handle preflight requests
+app.options('*', cors(corsOptions));
+
+// Add CORS debugging middleware
+app.use((req, res, next) => {
+  console.log(`🌐 ${req.method} ${req.path} - Origin: ${req.headers.origin || 'No origin'}`);
+  next();
+});
+
 app.use(express.json());
 
 // Serve uploaded images statically
@@ -115,15 +133,18 @@ const startServer = async () => {
   });
 };
 
-// Optional health check in development
-if (process.env.NODE_ENV !== 'production') {
-  app.get('/api/health', (req, res) => {
-    res.json({
-      status: '✅ API is running',
-      timestamp: new Date().toISOString(),
-    });
+// Health check endpoint (available in all environments)
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: '✅ API is running',
+    timestamp: new Date().toISOString(),
+    cors: {
+      origin: req.headers.origin,
+      method: req.method,
+      headers: req.headers
+    }
   });
-}
+});
 
 // Start app
 startServer();
