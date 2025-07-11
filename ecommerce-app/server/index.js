@@ -22,32 +22,32 @@ const fs = require('fs');
 
 const app = express();
 
-// Setup CORS
+// CORS Configuration
 const allowedOrigins = [
-  'https://ecommerce-app-ws9s.onrender.com', // frontend
-  'https://ecomstore-7j0x.onrender.com',     // backend
-  'http://localhost:3000',                   // local development frontend
-  'http://localhost:3001',                   // alternative local frontend port
+  'http://localhost:3000',
+  'http://localhost:5000',
+  'https://ecomstore-7v4x.onrender.com',
+  'https://ecomstore-7v4x.onrender.com/'
 ];
 
 const corsOptions = {
   origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or curl requests)
+    // Allow requests with no origin (like mobile apps, curl, etc.)
     if (!origin) return callback(null, true);
     
-    // Allow localhost in development
-    if (process.env.NODE_ENV !== 'production') {
+    // In development, allow all origins
+    if (process.env.NODE_ENV === 'development') {
       console.log('Allowing origin in development:', origin);
       return callback(null, true);
     }
     
-    // Check if origin is in allowed list
+    // In production, only allow specific origins
     if (allowedOrigins.includes(origin) || origin.endsWith('.onrender.com')) {
       return callback(null, true);
     }
     
     console.log('❌ CORS blocked origin:', origin);
-    return callback(new Error('❌ Not allowed by CORS: ' + origin));
+    return callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
@@ -56,14 +56,24 @@ const corsOptions = {
     'X-Requested-With', 
     'Content-Type', 
     'Accept', 
-    'Authorization',
+    'Authorization', 
     'Cache-Control',
-    'X-Requested-With'
+    'X-Requested-With',
+    'X-Access-Token',
+    'Access-Control-Allow-Origin',
+    'Access-Control-Allow-Headers',
+    'Access-Control-Allow-Methods'
   ],
-  exposedHeaders: ['Content-Length', 'X-Foo', 'X-Bar'],
-  optionsSuccessStatus: 200, // Some legacy browsers (IE11, various SmartTVs) choke on 204
+  exposedHeaders: [
+    'Content-Length', 
+    'X-Foo', 
+    'X-Bar',
+    'Access-Control-Allow-Origin',
+    'Access-Control-Allow-Credentials'
+  ],
+  optionsSuccessStatus: 200,
   preflightContinue: false,
-  maxAge: 86400 // 24 hours
+  maxAge: 86400
 };
 
 // Apply CORS with our configuration
@@ -71,6 +81,18 @@ app.use(cors(corsOptions));
 
 // Handle preflight requests
 app.options('*', cors(corsOptions));
+
+// Parse JSON bodies (as sent by API clients)
+app.use(express.json());
+
+// Log all incoming requests for debugging
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.originalUrl}`);
+  if (Object.keys(req.body).length > 0) {
+    console.log('Request body:', JSON.stringify(req.body, null, 2));
+  }
+  next();
+});
 
 // Add CORS debugging middleware
 app.use((req, res, next) => {
@@ -88,45 +110,61 @@ const productRoutes = require('./routes/products');
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 
-// Ensure uploads directory exists
+// Create uploads directory if it doesn't exist
 const uploadsDir = path.join(__dirname, '..', 'uploads');
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
   console.log('Created uploads directory at:', uploadsDir);
 }
 
-// Serve uploaded images statically
+// Serve uploaded files statically with proper headers
 console.log('Serving uploads from:', uploadsDir);
 app.use('/uploads', express.static(uploadsDir, {
   setHeaders: (res, path) => {
-    // Set proper cache headers for images
-    if (path.endsWith('.jpg') || path.endsWith('.jpeg') || path.endsWith('.png')) {
+    // Set proper cache and CORS headers for images
+    if (path.match(/\.(jpg|jpeg|png|gif)$/)) {
       res.setHeader('Cache-Control', 'public, max-age=31536000');
+      res.setHeader('Access-Control-Allow-Origin', '*');
     }
-  }
+  },
+  // Enable directory listing for debugging
+  index: false,
+  // Allow access to all files in the directory
+  dotfiles: 'allow'
 }));
 
 // Serve static files from the React app in production
-if (process.env.NODE_ENV === 'production') {
-  // Path to the React app build directory
+if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'development') {
   const clientBuildPath = path.join(__dirname, '..', 'client', 'build');
-  
-  // Log the build path for debugging
   console.log('Serving static files from:', clientBuildPath);
   
-  // Check if build directory exists
   if (fs.existsSync(clientBuildPath)) {
-    console.log('Found React build directory');
-    // Serve static files from the build directory
-    app.use(express.static(clientBuildPath));
+    console.log('✅ Found React build directory');
+    
+    // Serve static files from the React build directory
+    app.use(express.static(clientBuildPath, {
+      maxAge: '1y',
+      etag: true,
+      lastModified: true,
+      setHeaders: (res, path) => {
+        // Cache static assets for 1 year
+        if (path.match(/\.(js|css|png|jpg|jpeg|gif|ico|svg)$/)) {
+          res.setHeader('Cache-Control', 'public, max-age=31536000');
+        }
+      }
+    }));
     
     // Handle React routing, return all requests to React app
     app.get('*', (req, res) => {
-      console.log('Serving React app for path:', req.path);
-      res.sendFile(path.join(clientBuildPath, 'index.html'));
+      if (!req.path.startsWith('/api/') && !req.path.startsWith('/uploads/')) {
+        console.log('Serving React app for path:', req.path);
+        res.sendFile(path.join(clientBuildPath, 'index.html'));
+      } else {
+        res.status(404).json({ error: 'Not found' });
+      }
     });
   } else {
-    console.error('React build directory not found at:', clientBuildPath);
+    console.error('❌ React build directory not found at:', clientBuildPath);
     console.log('Current working directory:', process.cwd());
     console.log('Directory contents:', fs.readdirSync(path.join(__dirname, '..')));
   }
