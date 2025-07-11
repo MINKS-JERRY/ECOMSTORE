@@ -13,7 +13,7 @@ const getApiUrl = () => {
   }
 
   // 3. In production, determine the correct backend URL
-  const { hostname, protocol } = window.location;
+  const { hostname } = window.location;
   
   // If running on localhost in production mode (e.g., local build)
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
@@ -36,12 +36,15 @@ console.log('Using API URL:', API_URL);
 const api = axios.create({
   baseURL: API_URL,
   timeout: 30000, // 30 seconds timeout
+  withCredentials: true, // Important for cookies, authorization headers with HTTPS
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
-    'Cache-Control': 'no-cache',
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
     'Pragma': 'no-cache',
-    'Expires': '0'
+    'Expires': '0',
+    'Access-Control-Allow-Origin': window.location.origin,
+    'Access-Control-Allow-Credentials': 'true'
   }
 });
 

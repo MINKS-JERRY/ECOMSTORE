@@ -18,54 +18,72 @@ const fs = require('fs');
 // Initialize Express app
 const app = express();
 
-// CORS configuration
-const corsOptions = {
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
+// List of allowed origins
+const allowedOrigins = [
+  // Local development
+  /^http:\/\/localhost(:[0-9]+)?$/,
+  /^http:\/\/192\.168\.[0-9]+\.[0-9]+(:[0-9]+)?$/,
+  
+  // Production domains
+  'https://ecomstore-7j0x.onrender.com',
+  'https://ecommerce-app-ws9s.onrender.com'
+];
+
+// CORS middleware
+const corsMiddleware = (req, res, next) => {
+  const origin = req.headers.origin;
+  
+  // Always allow requests with no origin (like mobile apps or curl requests)
+  if (!origin) return next();
+  
+  // In development, allow all origins
+  if (process.env.NODE_ENV !== 'production') {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
     
-    const allowedOrigins = [
-      // Local development
-      /^http:\/\/localhost(:[0-9]+)?$/,  // Any localhost port
-      /^http:\/\/192\.168\.[0-9]+\.[0-9]+(:[0-9]+)?$/, // Local network
-      
-      // Production domains
-      'https://ecomstore-7j0x.onrender.com',
-      'https://ecommerce-app-ws9s.onrender.com'
-    ];
-    
-    // In development, allow all origins for easier testing
-    if (process.env.NODE_ENV !== 'production') {
-      return callback(null, true);
+    // Handle preflight
+    if (req.method === 'OPTIONS') {
+      return res.status(200).end();
     }
     
-    // In production, check against allowed origins
-    if (allowedOrigins.some(regex => {
-      if (typeof regex === 'string') {
-        return origin === regex;
-      } else if (regex instanceof RegExp) {
-        return regex.test(origin);
-      }
-      return false;
-    }) || origin.endsWith('.onrender.com')) {
-      return callback(null, true);
+    return next();
+  }
+  
+  // In production, check against allowed origins
+  const isAllowed = allowedOrigins.some(regex => {
+    if (typeof regex === 'string') {
+      return origin === regex;
+    } else if (regex instanceof RegExp) {
+      return regex.test(origin);
+    }
+    return false;
+  }) || origin.endsWith('.onrender.com');
+  
+  if (isAllowed) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    
+    // Handle preflight
+    if (req.method === 'OPTIONS') {
+      return res.status(200).end();
     }
     
-    console.warn('Blocked by CORS:', origin);
-    return callback(new Error('Not allowed by CORS'));
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  exposedHeaders: ['Content-Range', 'X-Total-Count'],
-  optionsSuccessStatus: 200
+    return next();
+  }
+  
+  console.warn('Blocked by CORS:', origin);
+  return res.status(403).json({ error: 'Not allowed by CORS' });
 };
 
-// Enable pre-flight across-the-board
-app.options('*', cors(corsOptions));
+// Apply CORS middleware
+app.use(corsMiddleware);
 
-// Apply CORS to all routes
-app.use(cors(corsOptions));
+// Handle preflight for all routes
+app.options('*', corsMiddleware);
 app.use(express.json());
 
 // Serve uploaded images statically
