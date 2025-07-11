@@ -146,5 +146,10 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Add a simple root route for backend
+app.get('/', (req, res) => {
+  res.send('Backend is running. Use /api endpoints.');
+});
+
 // Start app
 startServer();

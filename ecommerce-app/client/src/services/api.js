@@ -1,35 +1,7 @@
 import axios from 'axios';
 
-// Determine the API URL based on environment
-const getApiUrl = () => {
-  // 1. Check for environment variable first (highest priority)
-  if (process.env.REACT_APP_API_URL) {
-    return process.env.REACT_APP_API_URL;
-  }
-
-  // 2. In development, use localhost
-  if (process.env.NODE_ENV !== 'production') {
-    return 'http://localhost:5000/api';
-  }
-
-  // 3. In production, determine the correct backend URL
-  const { hostname } = window.location;
-  
-  // If running on localhost in production mode (e.g., local build)
-  if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    return 'http://localhost:5000/api';
-  }
-  
-  // If running on Render frontend, use Render backend
-  if (hostname.includes('onrender.com')) {
-    return 'https://ecomstore-7j0x.onrender.com/api';
-  }
-  
-  // Default fallback (should match your production backend URL)
-  return 'https://ecomstore-7j0x.onrender.com/api';
-};
-
-const API_URL = getApiUrl();
+// Set API URL from environment variable only
+const API_URL = process.env.REACT_APP_API_URL;
 console.log('Using API URL:', API_URL);
 
 // Create axios instance with enhanced configuration
