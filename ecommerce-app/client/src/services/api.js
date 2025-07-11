@@ -7,12 +7,17 @@ const getApiUrl = () => {
     return process.env.REACT_APP_API_URL;
   }
   
-  // In production, use the Render URL
+  // In production, use the Render backend URL
   if (process.env.NODE_ENV === 'production') {
+    // Use the same domain as the frontend but with the backend path
+    const frontendUrl = window.location.origin;
+    if (frontendUrl.includes('ecommerce-app-ws9s.onrender.com')) {
+      return 'https://ecomstore-7j0x.onrender.com/api';
+    }
     return 'https://ecomstore-7j0x.onrender.com/api';
   }
   
-  // In development, use localhost or the local network IP
+  // In development, use localhost
   return 'http://localhost:5000/api';
 };
 

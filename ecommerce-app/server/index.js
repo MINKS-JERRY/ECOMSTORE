@@ -24,17 +24,17 @@ const corsOptions = {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     
-    const allowedOrigins = [
+        const allowedOrigins = [
       'http://localhost:3000',
       'https://ecomstore-7j0x.onrender.com',
-      'https://ecomstore-7j0x.onrender.com',
-      'http://192.168.1.*', // Allow local network access (adjust as needed)
-      '*' // Allow all origins in development
+      'https://ecommerce-app-ws9s.onrender.com',
+      'http://192.168.1.*', // Allow local network access
+      'http://localhost:*'  // Allow any localhost port in development
     ];
     
     if (process.env.NODE_ENV === 'production') {
-      // In production, only allow specific origins
-      if (allowedOrigins.includes(origin) || origin.endsWith('.onrender.com')) {
+      // Allow all subdomains of onrender.com in production
+      if (origin.endsWith('.onrender.com') || allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
       return callback(new Error('Not allowed by CORS'));
