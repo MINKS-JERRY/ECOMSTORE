@@ -25,16 +25,31 @@ app.use(express.json());
 // Serve uploaded images statically
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-// Serve static assets in production
-if (process.env.NODE_ENV === 'production') {
-  // Set static folder
-  const clientBuildPath = path.join(__dirname, '../client/build');
-  app.use(express.static(clientBuildPath));
+// Serve static files from the React app
+const clientBuildPath = path.join(__dirname, '../client/build');
 
-  // Serve the React app for all routes except /api
-  app.get(['/', '/login', '/register', '/products*', '/cart', '/profile'], (req, res) => {
+// Check if the build directory exists
+const buildPathExists = fs.existsSync(clientBuildPath);
+
+if (buildPathExists) {
+  console.log('✅ Found client build directory');
+  
+  // Serve static files from the React app
+  app.use(express.static(clientBuildPath));
+  
+  // Handle React routing, return all requests to React app
+  app.get('*', (req, res) => {
     res.sendFile(path.join(clientBuildPath, 'index.html'));
   });
+} else {
+  console.warn('⚠️  Client build directory not found. Make sure to build the React app.');
+  
+  // In development, you might want to proxy to the React dev server
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('Running in development mode with proxy to React dev server');
+  } else {
+    console.error('❌ Production build not found. Please build the React app before starting the server.');
+  }
 }
 
 // Only check for .env file in development
