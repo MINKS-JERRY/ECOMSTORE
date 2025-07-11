@@ -31,6 +31,7 @@ const corsOptions = {
     
     // Allow localhost in development
     if (process.env.NODE_ENV !== 'production') {
+      console.log('Allowing origin in development:', origin);
       return callback(null, true);
     }
     
@@ -44,11 +45,22 @@ const corsOptions = {
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization'],
-  optionsSuccessStatus: 200 // Some legacy browsers (IE11, various SmartTVs) choke on 204
+  allowedHeaders: [
+    'Origin', 
+    'X-Requested-With', 
+    'Content-Type', 
+    'Accept', 
+    'Authorization',
+    'Cache-Control',
+    'X-Requested-With'
+  ],
+  exposedHeaders: ['Content-Length', 'X-Foo', 'X-Bar'],
+  optionsSuccessStatus: 200, // Some legacy browsers (IE11, various SmartTVs) choke on 204
+  preflightContinue: false,
+  maxAge: 86400 // 24 hours
 };
 
-// Apply CORS before other middleware
+// Apply CORS with our configuration
 app.use(cors(corsOptions));
 
 // Handle preflight requests
@@ -63,18 +75,19 @@ app.use((req, res, next) => {
 app.use(express.json());
 
 // Serve uploaded images statically
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
-// Serve static files from React (client) build
-const clientBuildPath = path.join(__dirname, '../client/build');
-if (fs.existsSync(clientBuildPath)) {
-  console.log('✅ Found client build directory');
+// Serve static files from the React app in production
+if (process.env.NODE_ENV === 'production') {
+  const clientBuildPath = path.join(__dirname, '..', 'client', 'build');
+  
+  // Set static folder
   app.use(express.static(clientBuildPath));
+  
+  // Handle React routing, return all requests to React app
   app.get('*', (req, res) => {
     res.sendFile(path.join(clientBuildPath, 'index.html'));
   });
-} else {
-  console.warn('⚠️ React build not found. Did you run `npm run build` in the client folder?');
 }
 
 // Development-only .env check

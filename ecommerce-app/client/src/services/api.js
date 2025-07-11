@@ -1,20 +1,21 @@
 import axios from 'axios';
 
-// Set API URL from environment variable only
-const API_URL = process.env.REACT_APP_API_URL;
-console.log('Using API URL:', API_URL);
+// In development, we use the proxy defined in package.json ('/api')
+// In production, we use the full URL from environment variable
+const isDevelopment = process.env.NODE_ENV === 'development';
+const API_BASE_URL = isDevelopment ? '/api' : process.env.REACT_APP_API_URL || '';
+
+console.log(`Running in ${isDevelopment ? 'development' : 'production'} mode`);
+console.log('Using API base URL:', API_BASE_URL || '/api (proxy)');
 
 // Create axios instance with enhanced configuration
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: API_BASE_URL,
   timeout: 30000, // 30 seconds timeout
   withCredentials: true, // Important for cookies, authorization headers with HTTPS
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json',
-    'Cache-Control': 'no-cache, no-store, must-revalidate',
-    'Pragma': 'no-cache',
-    'Expires': '0'
+    'Accept': 'application/json'
   }
 });
 

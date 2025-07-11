@@ -19,91 +19,134 @@ A full-stack e-commerce application built with MERN stack (MongoDB, Express.js, 
 
 ## Setup Instructions
 
-### Backend Setup
+### Local Development
 
-1. Navigate to the server directory:
+1. Clone the repository
+2. Install dependencies for both client and server:
    ```bash
+   # Install server dependencies
    cd server
-   ```
-
-2. Install dependencies:
-   ```bash
+   npm install
+   
+   # Install client dependencies
+   cd ../client
    npm install
    ```
 
-3. Create a `.env` file in the server directory with the following content:
-   ```
-   MONGO_URI=your_mongodb_connection_string
-   JWT_SECRET=your_jwt_secret_key
-   ```
+3. Set up environment variables:
+   - Create a `.env` file in the `server` directory with:
+     ```
+     MONGO_URI=your_mongodb_connection_string
+     JWT_SECRET=your_jwt_secret
+     NODE_ENV=development
+     PORT=5000
+     ```
+   - Create a `.env.development` file in the `client` directory with:
+     ```
+     REACT_APP_API_URL=http://localhost:5000/api
+     NODE_ENV=development
+     ```
 
-4. Start the server:
+4. Start the development servers:
    ```bash
-   npm start
-   ```
-   The server will start on `http://localhost:5000`
-
-### Frontend Setup
-
-1. Open a new terminal and navigate to the client directory:
-   ```bash
+   # In one terminal (server)
+   cd server
+   npm run dev
+   
+   # In another terminal (client)
    cd client
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Start the development server:
-   ```bash
    npm start
    ```
-   The application will open in your default browser at `http://localhost:3000`
 
-## Available Scripts
+## Deployment
 
-### Server
+### Option 1: Render.com (Recommended)
 
-- `npm start` - Start the server in production mode
-- `npm run dev` - Start the server in development mode with nodemon
+1. Push your code to a GitHub repository
+2. Go to [Render.com](https://render.com) and sign up/login
+3. Create a new Web Service
+4. Connect your GitHub repository
+5. Configure the service:
+   - **Build Command**: `cd client && npm install && npm run build && cd ../server && npm install`
+   - **Start Command**: `cd server && npm start`
+   - **Environment**: Node
+   - **Root Directory**: (leave empty for root)
+6. Add environment variables:
+   - `NODE_ENV=production`
+   - `MONGO_URI=your_mongodb_connection_string`
+   - `JWT_SECRET=your_jwt_secret`
+   - `PORT=10000` (or any port, Render will provide the actual port via `process.env.PORT`)
+7. Deploy!
 
-### Client
+### Option 2: Vercel (Frontend) + Railway/Heroku (Backend)
 
-- `npm start` - Start the development server
-- `npm test` - Run tests
-- `npm run build` - Build the app for production
-- `npm run eject` - Eject from create-react-app (irreversible)
+#### Backend (Railway/Heroku)
+
+1. Push your code to a GitHub repository
+2. Follow the deployment guide on [Railway](https://railway.app/) or [Heroku](https://devcenter.heroku.com/)
+3. Set the environment variables as shown above
+
+#### Frontend (Vercel)
+
+1. Push your code to a GitHub repository
+2. Go to [Vercel](https://vercel.com/) and import your project
+3. Configure the project:
+   - **Framework Preset**: Create React App
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `build`
+   - **Install Command**: `npm install`
+4. Add environment variables:
+   - `REACT_APP_API_URL=your_backend_url` (e.g., `https://your-railway-or-heroku-app.railway.app/api`)
+5. Deploy!
+
+## Environment Variables
+
+### Server (`.env`)
+
+```
+MONGO_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret
+NODE_ENV=development
+PORT=5000
+```
+
+### Client (`.env.development` for local development)
+
+```
+REACT_APP_API_URL=http://localhost:5000/api
+NODE_ENV=development
+```
 
 ## Project Structure
 
 ```
 ecommerce-app/
 ├── client/                 # React frontend
-│   ├── public/             # Static files
-│   └── src/                # Source files
-│       ├── components/     # Reusable components
-│       ├── context/        # React context providers
-│       ├── pages/          # Page components
-│       ├── services/       # API services
-│       └── utils/          # Utility functions
-└── server/                 # Node.js backend
-    ├── models/             # MongoDB models
-    ├── routes/             # API routes
-    └── middleware/         # Custom middleware
+│   ├── public/            # Static files
+│   └── src/               # React source code
+│       ├── components/    # Reusable components
+│       ├── pages/         # Page components
+│       ├── services/      # API services
+│       └── App.js         # Main App component
+└── server/                # Express backend
+    ├── models/           # Mongoose models
+    ├── routes/          # API routes
+    └── index.js         # Server entry point
 ```
 
-## Environment Variables
-
-### Server
-
-- `PORT` - Port number (default: 5000)
-- `MONGO_URI` - MongoDB connection string
-- `JWT_SECRET` - Secret key for JWT authentication
+## Available Scripts
 
 ### Client
 
-- `REACT_APP_API_URL` - Backend API URL (default: http://localhost:5000/api)
+- `npm start` - Start development server
+- `npm run build` - Build for production
+- `npm test` - Run tests
+
+### Server
+
+- `npm start` - Start production server
+- `npm run dev` - Start development server with nodemon
+- `npm run client` - Start client from server directory
 
 ## Contributing
 
