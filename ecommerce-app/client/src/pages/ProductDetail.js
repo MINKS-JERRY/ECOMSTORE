@@ -35,26 +35,26 @@ const ProductDetail = () => {
   }
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 4, mb: 4 }}>
-      <Paper sx={{ p: 4, borderRadius: 2, boxShadow: 3 }}>
+    <Container maxWidth="sm" sx={{ mt: { xs: 2, md: 4 }, mb: { xs: 2, md: 4 }, px: { xs: 1, sm: 2 } }}>
+      <Paper sx={{ p: { xs: 2, md: 4 }, borderRadius: 2, boxShadow: 3 }}>
         <Stack spacing={3}>
           <CardMedia
             component="img"
-            height="300"
+            height="220"
             image={product.image && product.image.startsWith('/uploads') ? `${BACKEND_URL}${product.image}` : product.image}
             alt={product.title}
-            sx={{ objectFit: 'cover', borderRadius: 2 }}
+            sx={{ objectFit: 'cover', borderRadius: 2, width: '100%', minHeight: 180, maxHeight: 300 }}
           />
-          <Typography variant="h4" sx={{ fontWeight: 600 }}>{product.title}</Typography>
-          <Typography variant="body1" color="text.secondary">{product.description}</Typography>
+          <Typography variant="h4" sx={{ fontWeight: 600, fontSize: { xs: '1.5rem', md: '2.2rem' } }}>{product.title}</Typography>
+          <Typography variant="body1" color="text.secondary" sx={{ fontSize: { xs: '1rem', md: '1.1rem' } }}>{product.description}</Typography>
           <Divider />
-          <Typography variant="h5" color="primary">CFA {product.price}</Typography>
+          <Typography variant="h5" color="primary" sx={{ fontWeight: 600, fontSize: { xs: '1.2rem', md: '1.5rem' } }}>CFA {product.price}</Typography>
           {product.vendorId && (
             <Box>
               <Typography variant="subtitle1">Vendor: {product.vendorId.name}</Typography>
               <Typography variant="subtitle2" color="text.secondary">{product.vendorId.email}</Typography>
               {product.vendorId.whatsappNumber && (
-                <Stack direction="row" spacing={1} alignItems="center" mt={1}>
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} alignItems={{ xs: 'flex-start', sm: 'center' }} mt={1}>
                   <WhatsAppIcon color="success" />
                   <Typography variant="body2">{product.vendorId.whatsappNumber}</Typography>
                   <Button
@@ -64,7 +64,7 @@ const ProductDetail = () => {
                     href={`https://wa.me/${product.vendorId.whatsappNumber.replace(/[^\d]/g, '')}`}
                     target="_blank"
                     startIcon={<WhatsAppIcon />}
-                    sx={{ ml: 1 }}
+                    sx={{ ml: { sm: 1 } }}
                   >
                     WhatsApp
                   </Button>

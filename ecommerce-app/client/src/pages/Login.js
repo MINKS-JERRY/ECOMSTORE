@@ -8,7 +8,8 @@ import {
   Typography, 
   Box, 
   Alert,
-  CircularProgress
+  CircularProgress,
+  Stack
 } from '@mui/material';
 import { useAuth } from '../context/AuthContext';
 
@@ -49,9 +50,9 @@ const Login = () => {
   };
 
   return (
-    <Container maxWidth="sm">
-      <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom align="center">
+    <Container maxWidth="sm" sx={{ px: { xs: 1, sm: 2 } }}>
+      <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, mt: { xs: 2, md: 4 } }}>
+        <Typography variant="h4" component="h1" gutterBottom align="center" sx={{ fontWeight: 600, fontSize: { xs: '1.5rem', md: '2.2rem' } }}>
           Login
         </Typography>
         
@@ -62,44 +63,46 @@ const Login = () => {
         )}
         
         <Box component="form" onSubmit={handleSubmit}>
-          <TextField
-            label="Email"
-            type="email"
-            fullWidth
-            margin="normal"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          
-          <TextField
-            label="Password"
-            type="password"
-            fullWidth
-            margin="normal"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-          
-          <Button
-            type="submit"
-            variant="contained"
-            color="primary"
-            fullWidth
-            size="large"
-            sx={{ mt: 2, mb: 2 }}
-            disabled={loading}
-          >
-            {loading ? <CircularProgress size={24} /> : 'Login'}
-          </Button>
-          
-          <Typography align="center">
-            Don't have an account?{' '}
-            <Link to="/register" style={{ textDecoration: 'none' }}>
-              Register here
-            </Link>
-          </Typography>
+          <Stack spacing={2}>
+            <TextField
+              label="Email"
+              type="email"
+              fullWidth
+              margin="normal"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            
+            <TextField
+              label="Password"
+              type="password"
+              fullWidth
+              margin="normal"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              fullWidth
+              size="large"
+              sx={{ mt: 2, mb: 2 }}
+              disabled={loading}
+            >
+              {loading ? <CircularProgress size={24} /> : 'Login'}
+            </Button>
+            
+            <Typography align="center">
+              Don't have an account?{' '}
+              <Link to="/register" style={{ textDecoration: 'none' }}>
+                Register here
+              </Link>
+            </Typography>
+          </Stack>
         </Box>
       </Paper>
     </Container>

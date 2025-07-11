@@ -98,10 +98,10 @@ const EditProduct = () => {
   }
 
   return (
-    <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
-      <Paper sx={{ p: 4, borderRadius: 2, boxShadow: 3 }}>
+    <Container maxWidth="md" sx={{ mt: { xs: 2, md: 4 }, mb: { xs: 2, md: 4 }, px: { xs: 1, sm: 2 } }}>
+      <Paper sx={{ p: { xs: 2, md: 4 }, borderRadius: 2, boxShadow: 3 }}>
         <Stack spacing={3}>
-          <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 600, textAlign: 'center' }}>
+          <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 600, textAlign: 'center', fontSize: { xs: '1.5rem', md: '2.2rem' } }}>
             Edit Product
           </Typography>
           {error && <Alert severity="error" sx={{ borderRadius: 1, mb: 2 }}>{error}</Alert>}
@@ -168,13 +168,13 @@ const EditProduct = () => {
                   </label>
                 </Box>
                 {preview && (
-                  <Card sx={{ height: '250px', borderRadius: 2, boxShadow: 2, mt: 2 }}>
+                  <Card sx={{ height: { xs: 180, md: 250 }, borderRadius: 2, boxShadow: 2, mt: 2 }}>
                     <CardMedia
                       component="img"
                       height="250"
                       image={preview}
                       alt="Product Preview"
-                      sx={{ objectFit: 'cover', borderRadius: '8px 8px 0 0' }}
+                      sx={{ objectFit: 'cover', borderRadius: '8px 8px 0 0', height: { xs: 180, md: 250 } }}
                     />
                   </Card>
                 )}

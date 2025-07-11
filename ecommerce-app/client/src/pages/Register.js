@@ -12,7 +12,8 @@ import {
   InputLabel,
   Select,
   Alert,
-  CircularProgress
+  CircularProgress,
+  Stack
 } from '@mui/material';
 import { useAuth } from '../context/AuthContext';
 
@@ -76,9 +77,9 @@ const Register = () => {
   };
 
   return (
-    <Container maxWidth="sm">
-      <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom align="center">
+    <Container maxWidth="sm" sx={{ px: { xs: 1, sm: 2 } }}>
+      <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, mt: { xs: 2, md: 4 } }}>
+        <Typography variant="h4" component="h1" gutterBottom align="center" sx={{ fontWeight: 600, fontSize: { xs: '1.5rem', md: '2.2rem' } }}>
           Create an Account
         </Typography>
         
@@ -89,84 +90,86 @@ const Register = () => {
         )}
         
         <Box component="form" onSubmit={handleSubmit}>
-          <TextField
-            label="Full Name"
-            name="name"
-            fullWidth
-            margin="normal"
-            value={formData.name}
-            onChange={handleChange}
-            required
-          />
-          
-          <TextField
-            label="Email"
-            name="email"
-            type="email"
-            fullWidth
-            margin="normal"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
-          
-          <TextField
-            label="Password"
-            name="password"
-            type="password"
-            fullWidth
-            margin="normal"
-            value={formData.password}
-            onChange={handleChange}
-            required
-          />
-          
-          {formData.role === 'vendor' && (
+          <Stack spacing={2}>
             <TextField
-              label="WhatsApp Number"
-              name="whatsappNumber"
-              type="tel"
+              label="Full Name"
+              name="name"
               fullWidth
               margin="normal"
-              value={formData.whatsappNumber}
+              value={formData.name}
               onChange={handleChange}
               required
-              placeholder="e.g. +2348012345678"
             />
-          )}
-
-          <FormControl fullWidth margin="normal">
-            <InputLabel id="role-label">Account Type</InputLabel>
-            <Select
-              labelId="role-label"
-              name="role"
-              value={formData.role}
-              label="Account Type"
+            
+            <TextField
+              label="Email"
+              name="email"
+              type="email"
+              fullWidth
+              margin="normal"
+              value={formData.email}
               onChange={handleChange}
+              required
+            />
+            
+            <TextField
+              label="Password"
+              name="password"
+              type="password"
+              fullWidth
+              margin="normal"
+              value={formData.password}
+              onChange={handleChange}
+              required
+            />
+            
+            {formData.role === 'vendor' && (
+              <TextField
+                label="WhatsApp Number"
+                name="whatsappNumber"
+                type="tel"
+                fullWidth
+                margin="normal"
+                value={formData.whatsappNumber}
+                onChange={handleChange}
+                required
+                placeholder="e.g. +2348012345678"
+              />
+            )}
+
+            <FormControl fullWidth margin="normal">
+              <InputLabel id="role-label">Account Type</InputLabel>
+              <Select
+                labelId="role-label"
+                name="role"
+                value={formData.role}
+                label="Account Type"
+                onChange={handleChange}
+              >
+                <MenuItem value="client">Client</MenuItem>
+                <MenuItem value="vendor">Vendor</MenuItem>
+              </Select>
+            </FormControl>
+            
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              fullWidth
+              size="large"
+              sx={{ mt: 2, mb: 2 }}
+              disabled={loading}
             >
-              <MenuItem value="client">Client</MenuItem>
-              <MenuItem value="vendor">Vendor</MenuItem>
-            </Select>
-          </FormControl>
-          
-          <Button
-            type="submit"
-            variant="contained"
-            color="primary"
-            fullWidth
-            size="large"
-            sx={{ mt: 2, mb: 2 }}
-            disabled={loading}
-          >
-            {loading ? <CircularProgress size={24} /> : 'Register'}
-          </Button>
-          
-          <Typography align="center">
-            Already have an account?{' '}
-            <Link to="/login" style={{ textDecoration: 'none' }}>
-              Login here
-            </Link>
-          </Typography>
+              {loading ? <CircularProgress size={24} /> : 'Register'}
+            </Button>
+            
+            <Typography align="center">
+              Already have an account?{' '}
+              <Link to="/login" style={{ textDecoration: 'none' }}>
+                Login here
+              </Link>
+            </Typography>
+          </Stack>
         </Box>
       </Paper>
     </Container>

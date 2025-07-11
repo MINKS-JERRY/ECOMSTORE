@@ -101,9 +101,9 @@ const Products = () => {
   const BACKEND_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-        <Typography variant="h4" component="h1">
+    <Container maxWidth="lg" sx={{ mt: { xs: 2, md: 4 }, mb: { xs: 2, md: 4 }, px: { xs: 1, sm: 2 } }}>
+      <Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }} mb={{ xs: 2, md: 4 }} gap={2}>
+        <Typography variant="h4" component="h1" sx={{ fontWeight: 600, fontSize: { xs: '1.5rem', md: '2.2rem' } }}>
           All Products
         </Typography>
         {isVendor && (
@@ -111,12 +111,12 @@ const Products = () => {
             variant="contained" 
             color="primary"
             onClick={() => navigate('/add-product')}
+            sx={{ width: { xs: '100%', sm: 'auto' } }}
           >
             Add New Product
           </Button>
         )}
       </Box>
-
       {products.length === 0 ? (
         <Box textAlign="center" my={4}>
           <Typography variant="h6">No products available yet.</Typography>
@@ -143,9 +143,9 @@ const Products = () => {
               </Typography>
             </Box>
           )}
-          <Grid container spacing={3}>
+          <Grid container spacing={{ xs: 2, md: 3 }}>
             {products.map((product) => (
-              <Grid item key={product._id} xs={12} sm={6} md={4}>
+              <Grid item key={product._id} xs={12} sm={6} md={4} lg={3}>
                 <Card sx={{ 
                   height: '100%',
                   display: 'flex',
@@ -154,16 +154,19 @@ const Products = () => {
                   transition: 'transform 0.2s ease-in-out',
                   '&:hover': {
                     transform: 'translateY(-4px)',
-                  }
+                  },
+                  minWidth: 0
                 }}>
                   <CardMedia
                     component="img"
-                    height="250"
+                    height="180"
                     image={product.image && product.image.startsWith('/uploads') ? `${BACKEND_URL}${product.image}` : product.image}
                     alt={product.title}
                     sx={{
                       objectFit: 'cover',
                       borderRadius: '8px 8px 0 0',
+                      width: '100%',
+                      minHeight: 180
                     }}
                   />
                   <CardContent sx={{ flexGrow: 1 }}>
@@ -175,7 +178,8 @@ const Products = () => {
                         sx={{ 
                           fontWeight: 600,
                           lineHeight: 1.2,
-                          mb: 1 
+                          mb: 1,
+                          fontSize: { xs: '1.1rem', md: '1.25rem' }
                         }}
                       >
                         {product.title}
@@ -185,7 +189,7 @@ const Products = () => {
                         color="text.secondary"
                         paragraph
                         sx={{ 
-                          height: '60px',
+                          height: { xs: 'auto', md: '60px' },
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
                           display: '-webkit-box',
@@ -201,7 +205,7 @@ const Products = () => {
                           color="primary"
                           sx={{ fontWeight: 600 }}
                         >
-                          ${product.price}
+                          CFA {product.price}
                         </Typography>
                         <Rating 
                           value={product.rating || 0} 
@@ -213,8 +217,8 @@ const Products = () => {
                       </Stack>
                     </Stack>
                   </CardContent>
-                  <CardActions sx={{ justifyContent: 'space-between', p: 2 }}>
-                    <Stack direction="row" spacing={2}>
+                  <CardActions sx={{ justifyContent: 'space-between', p: 2, flexWrap: 'wrap', gap: 1 }}>
+                    <Stack direction="row" spacing={1} sx={{ width: '100%' }}>
                       <Button 
                         variant="contained" 
                         startIcon={<ShoppingCartIcon />} 
@@ -222,10 +226,9 @@ const Products = () => {
                         sx={{
                           textTransform: 'none',
                           borderRadius: 2,
-                          px: 3,
-                          '&:hover': {
-                            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-                          },
+                          px: 2,
+                          flex: 1,
+                          fontSize: { xs: '0.9rem', md: '1rem' }
                         }}
                       >
                         Add to Cart

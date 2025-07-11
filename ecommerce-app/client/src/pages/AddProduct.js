@@ -117,37 +117,25 @@ const AddProduct = () => {
   }
 
   return (
-    <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
-      <Paper sx={{ 
-        p: 4,
-        borderRadius: 2,
-        boxShadow: 3
-      }}>
+    <Container maxWidth="md" sx={{ mt: { xs: 2, md: 4 }, mb: { xs: 2, md: 4 }, px: { xs: 1, sm: 2 } }}>
+      <Paper sx={{ p: { xs: 2, md: 4 }, borderRadius: 2, boxShadow: 3 }}>
         <Stack spacing={3}>
           <Typography 
             variant="h4" 
             component="h1" 
             gutterBottom
-            sx={{ 
-              fontWeight: 600,
-              textAlign: 'center'
-            }}
+            sx={{ fontWeight: 600, textAlign: 'center', fontSize: { xs: '1.5rem', md: '2.2rem' } }}
           >
             Add New Product
           </Typography>
-          
           {error && (
             <Alert 
               severity="error" 
-              sx={{ 
-                borderRadius: 1,
-                mb: 2 
-              }}
+              sx={{ borderRadius: 1, mb: 2 }}
             >
               {error}
             </Alert>
           )}
-
           {loading ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', pt: 4 }}>
               <CircularProgress />
@@ -164,13 +152,8 @@ const AddProduct = () => {
                   required
                   error={error.includes('Title')}
                   helperText={error.includes('Title') ? error : ''}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: 1,
-                    }
-                  }}
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: 1 } }}
                 />
-
                 <TextField
                   fullWidth
                   label="Product Description"
@@ -180,13 +163,8 @@ const AddProduct = () => {
                   multiline
                   rows={4}
                   required
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: 1,
-                    }
-                  }}
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: 1 } }}
                 />
-
                 <TextField
                   fullWidth
                   label="Price"
@@ -197,13 +175,8 @@ const AddProduct = () => {
                   required
                   error={error.includes('Price')}
                   helperText={error.includes('Price') ? error : ''}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: 1,
-                    }
-                  }}
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: 1 } }}
                 />
-
                 <Box>
                   <input
                     accept="image/*"
@@ -237,7 +210,6 @@ const AddProduct = () => {
                     </Button>
                   </label>
                 </Box>
-
                 {error.includes('Image') && (
                   <Typography 
                     color="error" 
@@ -247,11 +219,10 @@ const AddProduct = () => {
                     {error}
                   </Typography>
                 )}
-
                 {preview && (
                   <Card 
                     sx={{ 
-                      height: '250px',
+                      height: { xs: 180, md: 250 },
                       borderRadius: 2,
                       boxShadow: 2,
                       mt: 2
@@ -265,11 +236,11 @@ const AddProduct = () => {
                       sx={{
                         objectFit: 'cover',
                         borderRadius: '8px 8px 0 0',
+                        height: { xs: 180, md: 250 }
                       }}
                     />
                   </Card>
                 )}
-
                 <Button
                   type="submit"
                   variant="contained"
