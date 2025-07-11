@@ -35,12 +35,14 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-// Check if .env file exists
-const envPath = path.join(__dirname, '.env');
-if (!fs.existsSync(envPath)) {
-  console.error('❌ Error: .env file not found at:', envPath);
-  console.log('Please create a .env file with your MongoDB connection string');
-  process.exit(1);
+// Only check for .env file in development
+if (process.env.NODE_ENV !== 'production') {
+  const envPath = path.join(__dirname, '.env');
+  if (!fs.existsSync(envPath)) {
+    console.warn('⚠️  Warning: .env file not found at:', envPath);
+    console.log('In production, make sure to set environment variables in your hosting platform.');
+    console.log('For local development, create a .env file with your MongoDB connection string');
+  }
 }
 
 // Import and mount routes
