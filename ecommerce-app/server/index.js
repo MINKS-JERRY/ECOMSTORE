@@ -18,72 +18,47 @@ const fs = require('fs');
 // Initialize Express app
 const app = express();
 
-// List of allowed origins
-const allowedOrigins = [
-  // Local development
-  /^http:\/\/localhost(:[0-9]+)?$/,
-  /^http:\/\/192\.168\.[0-9]+\.[0-9]+(:[0-9]+)?$/,
-  
-  // Production domains
-  'https://ecomstore-7j0x.onrender.com',
-  'https://ecommerce-app-ws9s.onrender.com'
-];
-
-// CORS middleware
-const corsMiddleware = (req, res, next) => {
+// Enable CORS for all routes
+app.use((req, res, next) => {
   const origin = req.headers.origin;
   
-  // Always allow requests with no origin (like mobile apps or curl requests)
-  if (!origin) return next();
+  // List of allowed origins
+  const allowedOrigins = [
+    // Local development
+    /^http:\/\/localhost(:[0-9]+)?$/,
+    /^http:\/\/192\.168\.[0-9]+\.[0-9]+(:[0-9]+)?$/,
+    
+    // Production domains
+    'https://ecomstore-7j0x.onrender.com',
+    'https://ecommerce-app-ws9s.onrender.com',
+    'https://ecommerce-app-ws9s.onrender.com/'
+  ];
   
   // In development, allow all origins
   if (process.env.NODE_ENV !== 'production') {
-    res.header('Access-Control-Allow-Origin', origin);
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-    
-    // Handle preflight
-    if (req.method === 'OPTIONS') {
-      return res.status(200).end();
-    }
-    
-    return next();
-  }
-  
-  // In production, check against allowed origins
-  const isAllowed = allowedOrigins.some(regex => {
-    if (typeof regex === 'string') {
-      return origin === regex;
-    } else if (regex instanceof RegExp) {
-      return regex.test(origin);
-    }
+    res.header('Access-Control-Allow-Origin', origin || '*');
+  } 
+  // In production, only allow specific origins
+  else if (allowedOrigins.some(regex => {
+    if (typeof regex === 'string') return origin === regex;
+    if (regex instanceof RegExp) return regex.test(origin);
     return false;
-  }) || origin.endsWith('.onrender.com');
-  
-  if (isAllowed) {
+  }) || (origin && origin.endsWith('.onrender.com'))) {
     res.header('Access-Control-Allow-Origin', origin);
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-    
-    // Handle preflight
-    if (req.method === 'OPTIONS') {
-      return res.status(200).end();
-    }
-    
-    return next();
   }
   
-  console.warn('Blocked by CORS:', origin);
-  return res.status(403).json({ error: 'Not allowed by CORS' });
-};
-
-// Apply CORS middleware
-app.use(corsMiddleware);
-
-// Handle preflight for all routes
-app.options('*', corsMiddleware);
+  // Common CORS headers
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  
+  next();
+});
 app.use(express.json());
 
 // Serve uploaded images statically
