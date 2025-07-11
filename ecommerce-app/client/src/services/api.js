@@ -81,16 +81,28 @@ export const productsAPI = {
   getByVendor: (vendorId) => api.get(`/products/vendor/${vendorId}`),
   create: (productData) => {
     const formData = new FormData();
-    Object.keys(productData).forEach(key => {
-      if (key === 'image') {
-        formData.append('image', productData[key]);
-      } else {
-        formData.append(key, productData[key]);
-      }
+    
+    // Append all fields to FormData
+    formData.append('title', productData.title);
+    formData.append('description', productData.description || '');
+    formData.append('price', productData.price);
+    
+    // Handle file upload
+    if (productData.image) {
+      formData.append('image', productData.image);
+    }
+    
+    console.log('Creating product with data:', {
+      title: productData.title,
+      description: productData.description,
+      price: productData.price,
+      hasImage: !!productData.image
     });
+    
     return api.post('/products', formData, {
       headers: {
-        'Content-Type': 'multipart/form-data'
+        'Content-Type': 'multipart/form-data',
+        'Accept': 'application/json'
       }
     });
   },

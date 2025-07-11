@@ -98,13 +98,37 @@ const AddProduct = () => {
       setError('');
       setLoading(true);
       
-      await productsAPI.create(formData);
+      // Create FormData object
+      const formDataToSend = new FormData();
+      formDataToSend.append('title', formData.title);
+      formDataToSend.append('description', formData.description || '');
+      formDataToSend.append('price', formData.price);
+      formDataToSend.append('image', formData.image);
+      
+      // Log form data for debugging
+      console.log('Sending form data:', {
+        title: formData.title,
+        description: formData.description,
+        price: formData.price,
+        image: formData.image.name
+      });
+      
+      await productsAPI.create({
+        title: formData.title,
+        description: formData.description || '',
+        price: formData.price,
+        image: formData.image
+      });
       
       // Redirect to products page after successful creation
       navigate('/products');
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to add product');
-      console.error('Add product error:', err);
+      const errorMessage = err.response?.data?.error || err.message || 'Failed to add product';
+      setError(errorMessage);
+      console.error('Add product error:', {
+        error: err,
+        response: err.response?.data
+      });
     } finally {
       setLoading(false);
     }

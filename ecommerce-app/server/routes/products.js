@@ -41,40 +41,49 @@ const upload = multer({ storage: storage });
 
 // Add a new product (Vendor only)
 router.post('/', verifyToken, upload.single('image'), async (req, res) => {
-  console.log('BODY:', req.body);
-  console.log('FILE:', req.file);
+  console.log('=== NEW PRODUCT REQUEST ===');
+  console.log('Headers:', req.headers);
+  console.log('Content-Type:', req.get('Content-Type'));
+  console.log('Body:', req.body);
+  console.log('File:', req.file);
+  console.log('User:', req.user);
+  
   try {
     if (req.user.role !== 'vendor') {
+      console.log('Access denied - user is not a vendor');
       return res.status(403).json({ error: 'Only vendors can add products' });
     }
     
+    // Validate required fields
+    const { title, description, price } = req.body;
+    
+    if (!title || !title.trim()) {
+      console.log('Validation failed: Title is required');
+      return res.status(400).json({ error: 'Title is required' });
+    }
+    
+    const priceValue = parseFloat(price);
+    if (isNaN(priceValue) || priceValue <= 0) {
+      console.log('Validation failed: Valid price is required');
+      return res.status(400).json({ error: 'A valid price greater than 0 is required' });
+    }
+    
+    if (!req.file) {
+      console.log('Validation failed: Product image is required');
+      return res.status(400).json({ error: 'Product image is required' });
+    }
+    
     // Create image URL
-    let imageUrl = '';
-    if (req.file) {
-      imageUrl = `/uploads/${req.file.filename}`;
-      console.log('Generated image URL:', imageUrl);
-    }
+    const imageUrl = `/uploads/${req.file.filename}`;
+    console.log('Generated image URL:', imageUrl);
     
-    let { title, description, price } = req.body;
-    title = title ? title.trim() : '';
-    price = price ? parseFloat(price) : null;
-    let imagePath = '';
-    if (req.file) {
-      imagePath = '/uploads/' + req.file.filename;
-    }
-    
-    // Validate input
-    if (!title || !price) {
-      return res.status(400).json({ error: 'Title and price are required' });
-    }
-    
-    // Create product
+    // Create and save product
     const newProduct = new Product({
-      title,
-      description: description || '',
-      price,
+      title: title.trim(),
+      description: (description || '').trim(),
+      price: priceValue,
       vendorId: req.user.id,
-      image: imageUrl || ''
+      image: imageUrl
     });
     
     await newProduct.save();
@@ -82,9 +91,11 @@ router.post('/', verifyToken, upload.single('image'), async (req, res) => {
     // Populate vendor info
     await newProduct.populate('vendorId', 'name email');
     
+    console.log('Product created successfully:', newProduct);
+    
     res.status(201).json({
       message: 'Product added successfully',
-      product
+      product: newProduct
     });
     
   } catch (err) {
