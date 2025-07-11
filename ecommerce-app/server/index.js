@@ -126,13 +126,6 @@ if (process.env.NODE_ENV !== 'production') {
   }
 }
 
-// Routes
-const authRoutes = require('./routes/auth');
-const productRoutes = require('./routes/products');
-
-app.use('/api/auth', authRoutes);
-app.use('/api/products', productRoutes);
-
 // MongoDB Connection
 const connectToMongoDB = async () => {
   const MONGO_URI = process.env.MONGO_URI;
