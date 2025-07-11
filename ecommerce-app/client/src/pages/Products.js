@@ -98,7 +98,24 @@ const Products = () => {
     );
   }
 
-  const BACKEND_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+  // Get the current environment
+  const isProduction = process.env.NODE_ENV === 'production';
+  // In production, we use relative paths since frontend and backend are served from the same domain
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return '';
+    // If it's already a full URL, return as is
+    if (imagePath.startsWith('http')) return imagePath;
+    // If it's a path starting with /uploads, handle based on environment
+    if (imagePath.startsWith('/uploads')) {
+      // In development, prepend the backend URL
+      if (!isProduction) {
+        return `http://localhost:5000${imagePath}`;
+      }
+      // In production, use the path as is (relative to the domain)
+      return imagePath;
+    }
+    return imagePath; // Return as is for other cases
+  };
 
   return (
     <Container maxWidth="lg" sx={{ mt: { xs: 2, md: 4 }, mb: { xs: 2, md: 4 }, px: { xs: 1, sm: 2 } }}>
@@ -160,13 +177,18 @@ const Products = () => {
                   <CardMedia
                     component="img"
                     height="180"
-                    image={product.image && product.image.startsWith('/uploads') ? `${BACKEND_URL}${product.image}` : product.image}
+                    image={getImageUrl(product.image)}
                     alt={product.title}
+                    onError={(e) => {
+                      console.error('Error loading image:', product.image);
+                      e.target.src = 'https://via.placeholder.com/300x180?text=Image+Not+Available';
+                    }}
                     sx={{
                       objectFit: 'cover',
                       borderRadius: '8px 8px 0 0',
                       width: '100%',
-                      minHeight: 180
+                      minHeight: 180,
+                      backgroundColor: 'rgba(0, 0, 0, 0.08)'
                     }}
                   />
                   <CardContent sx={{ flexGrow: 1 }}>

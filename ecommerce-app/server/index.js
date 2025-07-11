@@ -119,19 +119,41 @@ if (!fs.existsSync(uploadsDir)) {
 
 // Serve uploaded files statically with proper headers
 console.log('Serving uploads from:', uploadsDir);
-app.use('/uploads', express.static(uploadsDir, {
+
+// Create a static file server for uploads with proper headers
+const uploadsStatic = express.static(uploadsDir, {
   setHeaders: (res, path) => {
-    // Set proper cache and CORS headers for images
-    if (path.match(/\.(jpg|jpeg|png|gif)$/)) {
-      res.setHeader('Cache-Control', 'public, max-age=31536000');
-      res.setHeader('Access-Control-Allow-Origin', '*');
+    // Set CORS headers for all files
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    
+    // Set cache control for images
+    if (path.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
     }
   },
-  // Enable directory listing for debugging
-  index: false,
-  // Allow access to all files in the directory
-  dotfiles: 'allow'
-}));
+  index: false, // Disable directory listing
+  dotfiles: 'allow', // Allow access to dotfiles
+  fallthrough: true, // Continue to next middleware if file not found
+  immutable: true, // Enable immutable caching
+  maxAge: '1y' // Cache for 1 year
+});
+
+// Mount the static file server
+app.use('/uploads', (req, res, next) => {
+  console.log(`📁 Static file request: ${req.method} ${req.originalUrl}`);
+  uploadsStatic(req, res, (err) => {
+    if (err) {
+      console.error('Error serving static file:', err);
+      if (!res.headersSent) {
+        res.status(404).json({ error: 'File not found' });
+      }
+    } else {
+      next();
+    }
+  });
+});
 
 // Serve static files from the React app in production
 if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'development') {

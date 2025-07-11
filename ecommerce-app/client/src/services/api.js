@@ -1,10 +1,11 @@
 import axios from 'axios';
 
-// Always use relative paths for API requests
-// This avoids CORS issues in production
-const API_BASE_URL = '/api';
+// Use environment variable for API base URL
+// This will be '/api' in production (same domain) and 'http://localhost:5000/api' in development
+const API_BASE_URL = process.env.REACT_APP_API_URL || '/api';
 
 console.log('API base URL:', API_BASE_URL);
+console.log('Node Environment:', process.env.NODE_ENV);
 
 // Create axios instance with enhanced configuration
 const api = axios.create({
