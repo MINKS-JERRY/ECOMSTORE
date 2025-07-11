@@ -88,8 +88,23 @@ const productRoutes = require('./routes/products');
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 
+// Ensure uploads directory exists
+const uploadsDir = path.join(__dirname, '..', 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+  console.log('Created uploads directory at:', uploadsDir);
+}
+
 // Serve uploaded images statically
-app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
+console.log('Serving uploads from:', uploadsDir);
+app.use('/uploads', express.static(uploadsDir, {
+  setHeaders: (res, path) => {
+    // Set proper cache headers for images
+    if (path.endsWith('.jpg') || path.endsWith('.jpeg') || path.endsWith('.png')) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000');
+    }
+  }
+}));
 
 // Serve static files from the React app in production
 if (process.env.NODE_ENV === 'production') {
@@ -137,12 +152,17 @@ const connectToMongoDB = async () => {
 
   try {
     console.log('🔌 Connecting to MongoDB...');
-    await mongoose.connect(MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      serverSelectionTimeoutMS: 10000,
-      socketTimeoutMS: 45000,
-    });
+    console.log('Using MongoDB URI:', MONGO_URI.replace(/(mongodb(\+srv)?:\/\/[^:]+:)[^@]+/i, '$1*****'));
+    
+    const options = {
+      serverSelectionTimeoutMS: 5000, // 5 seconds timeout
+      socketTimeoutMS: 45000, // 45 seconds socket timeout
+      maxPoolSize: 10, // Maintain up to 10 socket connections
+      retryWrites: true,
+      w: 'majority'
+    };
+
+    await mongoose.connect(MONGO_URI, options);
     console.log('✅ MongoDB connected successfully');
     return true;
   } catch (err) {

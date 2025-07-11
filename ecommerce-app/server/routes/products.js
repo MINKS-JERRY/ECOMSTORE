@@ -48,6 +48,13 @@ router.post('/', verifyToken, upload.single('image'), async (req, res) => {
       return res.status(403).json({ error: 'Only vendors can add products' });
     }
     
+    // Create image URL
+    let imageUrl = '';
+    if (req.file) {
+      imageUrl = `/uploads/${req.file.filename}`;
+      console.log('Generated image URL:', imageUrl);
+    }
+    
     let { title, description, price } = req.body;
     title = title ? title.trim() : '';
     price = price ? parseFloat(price) : null;
@@ -62,18 +69,18 @@ router.post('/', verifyToken, upload.single('image'), async (req, res) => {
     }
     
     // Create product
-    const product = new Product({
+    const newProduct = new Product({
       title,
       description: description || '',
       price,
       vendorId: req.user.id,
-      image: imagePath
+      image: imageUrl || ''
     });
     
-    await product.save();
+    await newProduct.save();
     
     // Populate vendor info
-    await product.populate('vendorId', 'name email');
+    await newProduct.populate('vendorId', 'name email');
     
     res.status(201).json({
       message: 'Product added successfully',
