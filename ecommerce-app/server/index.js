@@ -28,10 +28,12 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 // Serve static assets in production
 if (process.env.NODE_ENV === 'production') {
   // Set static folder
-  app.use(express.static(path.join(__dirname, '../client/build')));
+  const clientBuildPath = path.join(__dirname, '../client/build');
+  app.use(express.static(clientBuildPath));
 
-  app.get('*', (req, res) => {
-    res.sendFile(path.resolve(__dirname, '..', 'client', 'build', 'index.html'));
+  // Serve the React app for all routes except /api
+  app.get(['/', '/login', '/register', '/products*', '/cart', '/profile'], (req, res) => {
+    res.sendFile(path.join(clientBuildPath, 'index.html'));
   });
 }
 
@@ -104,14 +106,16 @@ const startServer = async () => {
   });
 };
 
-// Health check route
-app.get('/', (req, res) => {
-  res.json({ 
-    status: '✅ E-commerce API is running',
-    database: mongoose.connection.readyState === 1 ? '✅ Connected' : '❌ Disconnected',
-    timestamp: new Date().toISOString()
+// Health check route (only in development)
+if (process.env.NODE_ENV !== 'production') {
+  app.get('/api/health', (req, res) => {
+    res.json({ 
+      status: '✅ E-commerce API is running',
+      database: '✅ Connected',
+      timestamp: new Date().toISOString()
+    });
   });
-});
+}
 
 // Start the application
 startServer();
