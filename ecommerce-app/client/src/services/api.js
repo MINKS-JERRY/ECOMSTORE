@@ -1,13 +1,35 @@
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL || 'https://ecomstore-7j0x.onrender.com/api';
+// Determine the API URL based on environment
+const getApiUrl = () => {
+  // If REACT_APP_API_URL is set, use it
+  if (process.env.REACT_APP_API_URL) {
+    return process.env.REACT_APP_API_URL;
+  }
+  
+  // In production, use the Render URL
+  if (process.env.NODE_ENV === 'production') {
+    return 'https://ecomstore-7j0x.onrender.com/api';
+  }
+  
+  // In development, use localhost or the local network IP
+  return 'http://localhost:5000/api';
+};
 
-// Create axios instance
+const API_URL = getApiUrl();
+console.log('Using API URL:', API_URL);
+
+// Create axios instance with enhanced configuration
 const api = axios.create({
   baseURL: API_URL,
+  timeout: 30000, // 30 seconds timeout
   headers: {
     'Content-Type': 'application/json',
-  },
+    'Accept': 'application/json',
+    'Cache-Control': 'no-cache',
+    'Pragma': 'no-cache',
+    'Expires': '0'
+  }
 });
 
 // Add a request interceptor to add the auth token to requests
@@ -20,6 +42,33 @@ api.interceptors.request.use(
     return config;
   },
   (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Add a response interceptor to handle errors
+api.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (error) => {
+    // Handle network errors
+    if (!error.response) {
+      console.error('Network Error:', error.message);
+      return Promise.reject({
+        message: 'Network Error: Please check your internet connection',
+        isNetworkError: true
+      });
+    }
+    
+    // Handle specific error statuses
+    if (error.response.status === 401) {
+      // Handle unauthorized access
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login';
+    }
+    
     return Promise.reject(error);
   }
 );

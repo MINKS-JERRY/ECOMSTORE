@@ -7,10 +7,12 @@ const router = express.Router();
 // Register a new user
 router.post('/register', async (req, res) => {
   try {
+    console.log('Registration request received:', { body: req.body });
     const { name, email, password, role, whatsappNumber } = req.body;
     
     // Validate input
     if (!name || !email || !password) {
+      console.log('Missing required fields:', { name, email, password });
       return res.status(400).json({ error: 'Please provide all required fields' });
     }
     if (role === 'vendor' && !whatsappNumber) {
@@ -18,8 +20,10 @@ router.post('/register', async (req, res) => {
     }
 
     // Check if user already exists
+    console.log('Checking for existing user with email:', email);
     const existingUser = await User.findOne({ email });
     if (existingUser) {
+      console.log('Email already in use:', email);
       return res.status(400).json({ error: 'Email already in use' });
     }
 
@@ -35,15 +39,19 @@ router.post('/register', async (req, res) => {
       whatsappNumber: role === 'vendor' ? whatsappNumber : undefined
     });
     
+    console.log('Saving new user to database...');
     await user.save();
+    console.log('User saved successfully:', { id: user._id, email: user.email });
     
     // Generate JWT
+    console.log('Generating JWT token...');
     const token = jwt.sign(
       { id: user._id, role: user.role }, 
       process.env.JWT_SECRET,
       { expiresIn: '1d' }
     );
     
+    console.log('Registration successful, sending response...');
     res.status(201).json({ 
       message: 'User registered successfully',
       token,
@@ -55,9 +63,33 @@ router.post('/register', async (req, res) => {
       }
     });
     
-  } catch (err) {
-    console.error('Registration error:', err);
-    res.status(500).json({ error: 'Server error during registration' });
+  } catch (error) {
+    console.error('Registration error:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+      ...error
+    });
+    
+    // More specific error handling
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({ 
+        error: 'Validation error',
+        details: error.message 
+      });
+    }
+    
+    if (error.name === 'MongoError' && error.code === 11000) {
+      return res.status(400).json({ 
+        error: 'Email already in use',
+        details: 'A user with this email already exists'
+      });
+    }
+    
+    res.status(500).json({ 
+      error: 'Server error during registration',
+      details: process.env.NODE_ENV === 'development' ? error.message : 'Please try again later'
+    });
   }
 });
 

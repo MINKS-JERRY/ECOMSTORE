@@ -18,8 +18,42 @@ const fs = require('fs');
 // Initialize Express app
 const app = express();
 
-// Middleware
-app.use(cors());
+// CORS configuration
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'https://ecomstore-7j0x.onrender.com',
+      'https://ecomstore-7j0x.onrender.com',
+      'http://192.168.1.*', // Allow local network access (adjust as needed)
+      '*' // Allow all origins in development
+    ];
+    
+    if (process.env.NODE_ENV === 'production') {
+      // In production, only allow specific origins
+      if (allowedOrigins.includes(origin) || origin.endsWith('.onrender.com')) {
+        return callback(null, true);
+      }
+      return callback(new Error('Not allowed by CORS'));
+    } else {
+      // In development, allow all origins
+      return callback(null, true);
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 200 // For legacy browser support
+};
+
+// Enable pre-flight across-the-board
+app.options('*', cors(corsOptions));
+
+// Apply CORS to all routes
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Serve uploaded images statically
