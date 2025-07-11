@@ -24,29 +24,41 @@ const corsOptions = {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     
-        const allowedOrigins = [
-      'http://localhost:3000',
+    const allowedOrigins = [
+      // Local development
+      /^http:\/\/localhost(:[0-9]+)?$/,  // Any localhost port
+      /^http:\/\/192\.168\.[0-9]+\.[0-9]+(:[0-9]+)?$/, // Local network
+      
+      // Production domains
       'https://ecomstore-7j0x.onrender.com',
-      'https://ecommerce-app-ws9s.onrender.com',
-      'http://192.168.1.*', // Allow local network access
-      'http://localhost:*'  // Allow any localhost port in development
+      'https://ecommerce-app-ws9s.onrender.com'
     ];
     
-    if (process.env.NODE_ENV === 'production') {
-      // Allow all subdomains of onrender.com in production
-      if (origin.endsWith('.onrender.com') || allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-      return callback(new Error('Not allowed by CORS'));
-    } else {
-      // In development, allow all origins
+    // In development, allow all origins for easier testing
+    if (process.env.NODE_ENV !== 'production') {
       return callback(null, true);
     }
+    
+    // In production, check against allowed origins
+    if (allowedOrigins.some(regex => {
+      if (typeof regex === 'string') {
+        return origin === regex;
+      } else if (regex instanceof RegExp) {
+        return regex.test(origin);
+      }
+      return false;
+    }) || origin.endsWith('.onrender.com')) {
+      return callback(null, true);
+    }
+    
+    console.warn('Blocked by CORS:', origin);
+    return callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  optionsSuccessStatus: 200 // For legacy browser support
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Content-Range', 'X-Total-Count'],
+  optionsSuccessStatus: 200
 };
 
 // Enable pre-flight across-the-board

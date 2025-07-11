@@ -2,23 +2,31 @@ import axios from 'axios';
 
 // Determine the API URL based on environment
 const getApiUrl = () => {
-  // If REACT_APP_API_URL is set, use it
+  // 1. Check for environment variable first (highest priority)
   if (process.env.REACT_APP_API_URL) {
     return process.env.REACT_APP_API_URL;
   }
+
+  // 2. In development, use localhost
+  if (process.env.NODE_ENV !== 'production') {
+    return 'http://localhost:5000/api';
+  }
+
+  // 3. In production, determine the correct backend URL
+  const { hostname, protocol } = window.location;
   
-  // In production, use the Render backend URL
-  if (process.env.NODE_ENV === 'production') {
-    // Use the same domain as the frontend but with the backend path
-    const frontendUrl = window.location.origin;
-    if (frontendUrl.includes('ecommerce-app-ws9s.onrender.com')) {
-      return 'https://ecomstore-7j0x.onrender.com/api';
-    }
+  // If running on localhost in production mode (e.g., local build)
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return 'http://localhost:5000/api';
+  }
+  
+  // If running on Render frontend, use Render backend
+  if (hostname.includes('onrender.com')) {
     return 'https://ecomstore-7j0x.onrender.com/api';
   }
   
-  // In development, use localhost
-  return 'http://localhost:5000/api';
+  // Default fallback (should match your production backend URL)
+  return 'https://ecomstore-7j0x.onrender.com/api';
 };
 
 const API_URL = getApiUrl();
