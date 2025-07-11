@@ -1,5 +1,6 @@
 // Load environment variables from .env file
-require('dotenv').config({ path: __dirname + '/.env' });
+require('dotenv').config();
+
 
 // Log environment variables for debugging
 console.log('Environment variables:', {
